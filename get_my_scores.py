@@ -12,8 +12,8 @@ from data_analysis import *
 
 __author__ = 'Wang Cong'
 
-account = "142006010326"  # 学号
-password = "281115"  # 密码
+account = ""  # 学号
+password = ""  # 密码
 try_ver_times = 10  # 每次登录时验证码尝试次数
 try_login_times = 5  # 登录尝试次数
 session = requests.Session()  # 全局session会话
