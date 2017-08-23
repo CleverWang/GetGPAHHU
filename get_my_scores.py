@@ -121,7 +121,7 @@ def logout():
 
 
 if __name__ == '__main__':
-    print('登录中...')
+    print('学号：%s\n登录中...' % account)
     times = try_login_times
     while times:
         times -= 1
@@ -133,7 +133,7 @@ if __name__ == '__main__':
         r = login(account, password, ver_code)
         if r is False:
             print("登陆失败！")
-            continue;
+            continue
         else:
             print("登陆成功！")
             times = 1
@@ -141,6 +141,7 @@ if __name__ == '__main__':
     if times == 0:
         print('尝试登录%d次失败，程序退出！' % try_login_times)
         exit()
+
     print('获取成绩数据...')
     html_src = get_score_tables()
     if html_src is False:
@@ -152,47 +153,64 @@ if __name__ == '__main__':
     else:
         session.close()
         print('退出登录失败，强制关闭会话！')
+
     print('分析数据...')
     all_subs = get_all_subjects(html_src)
     all_ses = get_all_semesters(html_src)
     all_ev_se_subs = get_every_semester_subjects(all_subs, all_ses)
-    print('-' * 40)
+    print('-' * 80)
     print('%d个学期的总体情况：\n' % len(all_ses))
+    print("加权平均绩点：%.2f" % get_GPA(all_subs))
+    required_elective = get_required_elective_subjects(all_subs)
+    # print('必修课程总数：%d\t选修课程总数：%d' % (len(required_elective['必修']), len(required_elective['选修'])))
+    not_passed = get_not_passed_subjects(all_subs)
+    # print('必修课程未通过总数：%d\t选修课程未通过总数：%d\n' % (len(not_passed['必修']), len(not_passed['选修'])))
+    for key in required_elective.keys():
+        # print(len(not_passed[key]))
+        print('%s课程总数：%-4d\t%s课程未通过数：%-4d' % (
+            key, len(required_elective[key]), key, len(not_passed[key]) if key in not_passed.keys() else 0))
     t1 = sum(list(map(float, [se.least_credits for se in all_ses])))
     t2 = sum(list(map(float, [se.studied_credits for se in all_ses])))
     t3 = sum(list(map(int, [se.studied_subjects for se in all_ses])))
     t4 = sum(list(map(int, [se.passed_subjects for se in all_ses])))
-    print("加权平均绩点为：%.2f" % get_GPA(all_subs))
     print('最低修读学分：%.1f\t已修读课程总学分：%.1f\t已修读课程门数：%d\t通过课程门数：%d' % (t1, t2, t3, t4))
-    required_elective = get_required_elective_subjects(all_subs)
-    print('必修课程总数：%d\t选修课程总数：%d' % (len(required_elective['必修']), len(required_elective['选修'])))
-    not_passed = get_not_passed_subjects(all_subs)
-    print('必修课程未通过总数：%d\t选修课程未通过总数：%d\n' % (len(not_passed['必修']), len(not_passed['选修'])))
-    print('-' * 40)
+
+    print('-' * 80)
     print('每个学期的具体情况：\n')
     for i in range(len(all_ses)):
         print(all_ses[i].name)
-        print("加权平均绩点为：%.2f" % get_GPA(all_ev_se_subs[i]))
+        print("加权平均绩点：%.2f" % get_GPA(all_ev_se_subs[i]))
+        required_elective = get_required_elective_subjects(all_ev_se_subs[i])
+        # print('必修课程总数：%d\t选修课程总数：%d' % (len(required_elective['必修']), len(required_elective['选修'])))
+        not_passed = get_not_passed_subjects(all_ev_se_subs[i])
+        # print('必修课程未通过总数：%d\t选修课程未通过总数：%d' % (len(not_passed['必修']), len(not_passed['选修'])))
+        for key in required_elective.keys():
+            print('%s课程总数：%-4d\t%s课程未通过数：%-4d' % (
+                key, len(required_elective[key]), key, len(not_passed[key]) if key in not_passed.keys() else 0))
         print('最低修读学分：%s\t已修读课程总学分：%s\t已修读课程门数：%s\t通过课程门数：%s' % (
             all_ses[i].least_credits, all_ses[i].studied_credits, all_ses[i].studied_subjects,
             all_ses[i].passed_subjects))
-        required_elective = get_required_elective_subjects(all_ev_se_subs[i])
-        print('必修课程总数：%d\t选修课程总数：%d' % (len(required_elective['必修']), len(required_elective['选修'])))
-        not_passed = get_not_passed_subjects(all_ev_se_subs[i])
-        print('必修课程未通过总数：%d\t选修课程未通过总数：%d' % (len(not_passed['必修']), len(not_passed['选修'])))
-        print('未通过必修课程详细信息：')
-        if len(not_passed['必修']) == 0:
-            print('无')
-        else:
-            print('课程号\t课序号\t课程名\t英文课程名\t学分\t课程属性\t成绩')
-            for sub in not_passed['必修']:
-                sub.print_subject_info()
-        print('未通过选修课程详细信息：')
-        if len(not_passed['选修']) == 0:
-            print('无')
-        else:
-            print('课程号\t课序号\t课程名\t英文课程名\t学分\t课程属性\t成绩')
-            for sub in not_passed['选修']:
-                sub.print_subject_info()
+        for key in not_passed.keys():
+            print('未通过%s课程详细信息：' % key)
+            if len(not_passed[key]) == 0:
+                print('无')
+            else:
+                print('课程号\t课序号\t课程名\t英文课程名\t学分\t课程属性\t成绩')
+                for sub in not_passed[key]:
+                    sub.print_subject_info()
         print()
-    print('-' * 40)
+        # print('未通过必修课程详细信息：')
+        # if len(not_passed['必修']) == 0:
+        #     print('无')
+        # else:
+        #     print('课程号\t课序号\t课程名\t英文课程名\t学分\t课程属性\t成绩')
+        #     for sub in not_passed['必修']:
+        #         sub.print_subject_info()
+        # print('未通过选修课程详细信息：')
+        # if len(not_passed['选修']) == 0:
+        #     print('无')
+        # else:
+        #     print('课程号\t课序号\t课程名\t英文课程名\t学分\t课程属性\t成绩')
+        #     for sub in not_passed['选修']:
+        #         sub.print_subject_info()
+    print('-' * 80)

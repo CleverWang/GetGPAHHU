@@ -22,7 +22,8 @@ class Subject(object):
         self._score = score
 
     def print_subject_info(self):
-        print(self._id, self._num, self._name, self._en_name, self._credit, self._properties, self._score)
+        print('%s\t%s\t%s\t%s\t%s\t%s\t%s' % (
+            self._id, self._num, self._name, self._en_name, self._credit, self._properties, self._score))
 
     @property
     def id(self):
@@ -51,6 +52,10 @@ class Subject(object):
     @property
     def score(self):
         return self._score
+
+        # @score.setter
+        # def score(self, sc):
+        #     self._score = sc
 
 
 class Semester(object):

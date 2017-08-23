@@ -138,7 +138,7 @@ def get_not_passed_subjects(subjects_list):
     """获取未通过的课程信息\n
        subjects_list：课程list\n
        return：挂科的科目dict"""
-    not_passed_subs = {'必修': [], '选修': []}
+    not_passed_subs = {}
     for sub in subjects_list:
         not_passed = False
         sc = sub.score
@@ -153,20 +153,27 @@ def get_not_passed_subjects(subjects_list):
             else:
                 continue
         if not_passed:
-            if sub.properties == '必修':
-                not_passed_subs['必修'].append(sub)
+            prop = sub.properties
+            if prop not in not_passed_subs.keys():
+                not_passed_subs[prop] = list()
+                not_passed_subs[prop].append(sub)
             else:
-                not_passed_subs['选修'].append(sub)
+                not_passed_subs[prop].append(sub)
     return not_passed_subs
 
 
 def get_required_elective_subjects(subjects_list):
-    """获取必修和选修的课程信息\n
+    """获取必修、选修、辅修等的课程信息\n
        subjects_list：课程list\n
-       return：必修和选修的课程dict"""
-    required_elective_subs = {'必修': [], '选修': []}
-    required_elective_subs['必修'] = [sub for sub in subjects_list if sub.properties == '必修']
-    required_elective_subs['选修'] = [sub for sub in subjects_list if sub.properties == '选修']
+       return：必修、选修、辅修等的课程dict"""
+    required_elective_subs = {}
+    for sub in subjects_list:
+        prop = sub.properties
+        if prop not in required_elective_subs.keys():
+            required_elective_subs[prop] = list()
+            required_elective_subs[prop].append(sub)
+        else:
+            required_elective_subs[prop].append(sub)
     return required_elective_subs
 
 
